@@ -1,6 +1,8 @@
 // src/email/fetchFromGraph.js
 const { Client } = require('@microsoft/microsoft-graph-client');
 const { ClientSecretCredential } = require('@azure/identity');
+const fs = require('fs');
+const path = require('path');
 require('isomorphic-fetch');
 
 const credential = new ClientSecretCredential(
@@ -24,14 +26,52 @@ async function fetchEmailAttachments() {
     },
   });
 
-  // Now you're ready to call Microsoft Graph, for example:
   const messages = await client
     .api('/users/' + process.env.GRAPH_USER + '/mailFolders/Inbox/messages')
     .top(10)
+    .select('id,subject,hasAttachments')
+    .orderby('receivedDateTime DESC')
     .get();
 
-  console.log('Fetched messages:', messages);
-  return [];
+  const downloadDir = path.join(__dirname, '../../downloads');
+  if (!fs.existsSync(downloadDir)) {
+    fs.mkdirSync(downloadDir);
+  }
+
+  const savedFiles = [];
+
+  for (const message of messages.value) {
+    if (message.hasAttachments) {
+      const attachments = await client
+        .api(`/users/${process.env.GRAPH_USER}/messages/${message.id}/attachments`)
+        .get();
+
+      for (const attachment of attachments.value) {
+        if (
+          attachment.contentType === 'application/pdf' &&
+          attachment.contentBytes &&
+          attachment.name
+        ) {
+          const buffer = Buffer.from(attachment.contentBytes, 'base64');
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const fileName = `${timestamp}-${attachment.name}`;
+          const filePath = path.join(downloadDir, fileName);
+          fs.writeFileSync(filePath, buffer);
+          console.log(`✅ Saved PDF: ${attachment.name}`);
+          savedFiles.push(filePath);
+        }
+      }
+      await client.api(`/users/${process.env.GRAPH_USER}/messages/${message.id}`).update({
+        isRead: true,
+      });
+    }
+  }
+
+  if (savedFiles.length === 0) {
+    console.log('📭 No new PDF invoices found.');
+  }
+
+  return savedFiles;
 }
 
 module.exports = fetchEmailAttachments;
