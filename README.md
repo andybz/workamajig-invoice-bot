@@ -13,5 +13,5 @@ There is a ENV file that houses the API keys and IMAP/SMTP credentials that is r
 
 ## Email Stuff
 - Utilizes Microsoft Azure with Microsoft Graph
-- The Client Secret will expire after 24 months and you may need to generate a new one. 
-- Go to Azure Portal -> App Registrations to find this information
+- The Client Secret will expire after 24 months and you will need to generate a new one. 
+- Go to Azure Portal -> [App Registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) to find this information
