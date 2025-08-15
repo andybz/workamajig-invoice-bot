@@ -1,4 +1,4 @@
 .env
 logs/
 node_modules/
-test-invoices/
+src/test-invoices/
