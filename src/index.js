@@ -1,12 +1,12 @@
 require('dotenv').config();
-const checkInbox = require('./email/checkInbox');
+const fetchEmailAttachments = require('./email/fetchFromGraph');
 const parseInvoice = require('./pdf/parseInvoice');
 const sendToWorkamajig = require('./api/workamajigClient');
 const sendEmail = require('./notify/sendEmail');
 
 async function main() {
   console.log('⏳ Checking inbox for new invoices...');
-  const files = await checkInbox();
+  const files = await fetchEmailAttachments();
 
   if (!files || files.length === 0) {
     console.log('📭 No new PDF invoices found.');

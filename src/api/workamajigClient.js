@@ -4,7 +4,7 @@ require('dotenv').config();
 async function createInvoice(invoiceData) {
   try {
     const response = await axios.post(
-      `${process.env.WORKAMAJIG_API_URL}/invoices`, 
+      `${process.env.WORKAMAJIG_API_URL}/vouchers`, 
       invoiceData,
       {
         headers: {
