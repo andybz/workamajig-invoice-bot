@@ -29,8 +29,9 @@ async function fetchEmailAttachments() {
   const messages = await client
     .api('/users/' + process.env.GRAPH_USER + '/mailFolders/Inbox/messages')
     .top(10)
-    .select('id,subject,hasAttachments')
+    .select('id,subject,hasAttachments,isRead')
     .orderby('receivedDateTime DESC')
+    .filter('isRead eq false') // Only unread emails
     .get();
 
   const downloadDir = path.join(__dirname, '../../downloads');
@@ -65,10 +66,6 @@ async function fetchEmailAttachments() {
         isRead: true,
       });
     }
-  }
-
-  if (savedFiles.length === 0) {
-    console.log('📭 No new PDF invoices found.');
   }
 
   return savedFiles;
